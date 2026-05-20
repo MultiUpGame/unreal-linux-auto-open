@@ -47,7 +47,7 @@ GUID дивись у своєму `.uproject` файлі — поле `EngineAss
 
 ```
 Display Name   →  Unreal Engine
-Executable     →  /home/multi-man/.local/bin/unreal-auto-open %F
+Executable     →  ~/.local/bin/unreal-auto-open %F
 File extensions → .uproject
 ☑ Встановити як дефолтну
 ```
