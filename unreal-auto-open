@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+UPROJECT="$1"
+CONFIG="$HOME/.config/ue-versions.conf"
+
+if [[ -z "$UPROJECT" || ! -f "$UPROJECT" ]]; then
+    zenity --error --title="Unreal Auto Open" \
+        --text="Файл не знайдено:\n$UPROJECT" 2>/dev/null
+    exit 1
+fi
+
+ENGINE_VER=$(python3 -c "
+import json, sys
+try:
+    with open(sys.argv[1]) as f:
+        print(json.load(f).get('EngineAssociation', ''))
+except Exception:
+    sys.exit(1)
+" "$UPROJECT" 2>/dev/null)
+
+if [[ -z "$ENGINE_VER" ]]; then
+    zenity --error --title="Unreal Auto Open" \
+        --text="Не вдалось визначити версію з файлу:\n$UPROJECT" 2>/dev/null
+    exit 1
+fi
+
+if [[ ! -f "$CONFIG" ]]; then
+    zenity --error --title="Unreal Auto Open" \
+        --text="Конфіг не знайдено:\n$CONFIG\n\nСтворіть файл і вкажіть шляхи:\n4.27 = /path/to/UE4Editor" 2>/dev/null
+    exit 1
+fi
+
+EDITOR_PATH=$(grep -E "^\s*${ENGINE_VER}\s*=" "$CONFIG" | head -1 | cut -d'=' -f2- | xargs)
+
+if [[ -z "$EDITOR_PATH" ]]; then
+    zenity --error --title="Unreal Auto Open" \
+        --text="Версія ${ENGINE_VER} не знайдена в конфігу.\n\nДодайте рядок у:\n$CONFIG\n\n${ENGINE_VER} = /path/to/UE4Editor" 2>/dev/null
+    exit 1
+fi
+
+if [[ ! -f "$EDITOR_PATH" ]]; then
+    zenity --error --title="Unreal Auto Open" \
+        --text="Бінарник не знайдено:\n$EDITOR_PATH\n\nПеревірте шлях у:\n$CONFIG" 2>/dev/null
+    exit 1
+fi
+
+"$EDITOR_PATH" "$UPROJECT" &
