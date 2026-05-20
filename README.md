@@ -1,5 +1,9 @@
 # unreal-linux-auto-open
 
+![License](https://img.shields.io/github/license/MultiUpGame/unreal-linux-auto-open)
+![Platform](https://img.shields.io/badge/platform-Linux-blue)
+![Shell](https://img.shields.io/badge/shell-bash-green)
+
 Automatically opens `.uproject` files with the correct version of Unreal Engine on Linux.
 Double-click on any `.uproject` — it detects the version and launches the right editor.
 
