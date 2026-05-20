@@ -8,69 +8,49 @@
 ## Встановлення
 
 ```bash
+git clone https://github.com/MultiUpGame/unreal-linux-auto-open.git
+cd unreal-linux-auto-open
 bash install.sh
 ```
 
-install.sh:
-- Встановлює `zenity` якщо немає (підтримує pacman / apt / dnf)
-- Копіює скрипт у `~/.local/bin/unreal-auto-open`
-- Створює конфіг `~/.config/ue-versions.conf` (тільки якщо не існує)
+Після встановлення відредагуй конфіг:
 
-Після встановлення відредагуй конфіг і додай свої версії UE.
-
-Якщо змінив шляхи в конфігу — просто запусти `install.sh` знову, конфіг не перезапишеться.  
-Щоб скинути конфіг до початкового: видали `~/.config/ue-versions.conf` і запусти знову.
+```bash
+nano ~/.config/ue-versions.conf
+```
 
 ---
 
-## Конфіг — `~/.config/ue-versions.conf`
+## Конфіг
+
+Вкажи шляхи до своїх версій UE:
 
 ```ini
-4.27 = /home/user/UE/UE4_27/Engine/Binaries/Linux/UE4Editor
-5.4  = /home/user/UE/UE5_4/Engine/Binaries/Linux/UnrealEditor
+4.27 = /home/user/UE/UE4_27/UnrealEngine/Engine/Binaries/Linux/UE4Editor
+5.4  = /home/user/UE/UE5_4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor
 ```
 
-Версія береться з поля `EngineAssociation` у `.uproject` файлі.
+**Custom builds** (зібрані з сорців) використовують GUID — його видно в `.uproject` файлі в полі `EngineAssociation`:
 
-**Custom builds (зібрані з сорців)** використовують GUID замість версії:
 ```ini
-{0004A0B4-08DE-9DB4-BB53-F9B8850D3D35} = /home/user/UE/UE4_27/Engine/Binaries/Linux/UE4Editor
+{0004A0B4-08DE-9DB4-BB53-F9B8850D3D35} = /home/user/UE/UE4_27/UnrealEngine/Engine/Binaries/Linux/UE4Editor
 ```
-GUID дивись у своєму `.uproject` файлі — поле `EngineAssociation`.
 
 ---
 
-## Реєстрація в системі
+## Що робить install.sh
 
-Після встановлення скрипту — додай в налаштуваннях Quickshell:  
-**Settings → Apps → Custom Apps → + Add**
+- Встановлює `zenity` якщо немає
+- Копіює скрипт у `~/.local/bin/`
+- Реєструє `.uproject` як тип файлу в системі
+- Створює ярлики для кожної версії UE з лаунчера
+- Встановлює дефолтну програму для `.uproject`
 
-```
-Display Name   →  Unreal Engine
-Executable     →  ~/.local/bin/unreal-auto-open %F
-File extensions → .uproject
-☑ Встановити як дефолтну
-```
-
-Один запис — працює для всіх версій UE.
-
----
-
-## Що відбувається при помилці
-
-| Ситуація | Вікно |
-|---|---|
-| Версія не знайдена в конфігу | Повідомлення з підказкою який рядок додати |
-| Бінарник не існує за вказаним шляхом | Повідомлення з шляхом для перевірки |
-| Конфіг не знайдено | Повідомлення де створити файл |
+Після встановлення подвійний клік на `.uproject` одразу відкриває правильну версію UE.
 
 ---
 
 ## Залежності
 
-| Пакет | Навіщо |
-|---|---|
-| `zenity` | Вікна з помилками |
-| `python3` | Читання JSON з `.uproject` |
-
-Обидва є на більшості Linux дистрибутивів.
+- `zenity` — встановлюється автоматично
+- `python3` — є на більшості Linux дистрибутивів
