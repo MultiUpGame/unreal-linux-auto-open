@@ -10,9 +10,9 @@ DESKTOP_DIR="$HOME/.local/share/applications"
 MIME_TARGET="$HOME/.local/share/mime/packages/unreal-uproject.xml"
 ICON_MIME="$HOME/.local/share/icons/hicolor/256x256/mimetypes/application-x-uproject.png"
 
-# Залежності
+# Dependencies
 if ! command -v zenity &>/dev/null; then
-    echo "Встановлення залежності: zenity"
+    echo "Installing dependency: zenity"
     if command -v pacman &>/dev/null; then
         sudo pacman -S --noconfirm zenity
     elif command -v apt &>/dev/null; then
@@ -20,26 +20,26 @@ if ! command -v zenity &>/dev/null; then
     elif command -v dnf &>/dev/null; then
         sudo dnf install -y zenity
     else
-        echo "! Не вдалось встановити zenity автоматично. Встановіть вручну."
+        echo "! Could not install zenity automatically. Please install it manually."
         exit 1
     fi
 fi
 
-# Скрипт
+# Script
 mkdir -p "$BIN_DIR"
 cp "$SCRIPT_DIR/unreal-auto-open" "$BIN_TARGET"
 chmod +x "$BIN_TARGET"
-echo "✓ Скрипт встановлено: $BIN_TARGET"
+echo "✓ Script installed: $BIN_TARGET"
 
-# Конфіг
+# Config
 if [[ ! -f "$CONF_TARGET" ]]; then
     cp "$SCRIPT_DIR/ue-versions.conf" "$CONF_TARGET"
-    echo "✓ Конфіг створено: $CONF_TARGET"
+    echo "✓ Config created: $CONF_TARGET"
 else
-    echo "! Конфіг вже існує, не перезаписую: $CONF_TARGET"
+    echo "! Config already exists, skipping: $CONF_TARGET"
 fi
 
-# Пошук іконки по директорії бінарника
+# Find icon from binary directory
 find_icon_for_binary() {
     local binary="$1"
     local bin_dir
@@ -53,8 +53,8 @@ find_icon_for_binary() {
     done
 }
 
-# Видалити старі некоректні .desktop файли UE
-rm -f "$DESKTOP_DIR/ue4-27.desktop" 2>/dev/null && echo "✓ Видалено старий ue4-27.desktop" || true
+# Remove old incorrect UE desktop entries
+rm -f "$DESKTOP_DIR/ue4-27.desktop" 2>/dev/null && echo "✓ Removed old ue4-27.desktop" || true
 
 mkdir -p "$DESKTOP_DIR"
 mkdir -p "$HOME/.local/share/icons/hicolor/256x256/apps"
@@ -62,9 +62,9 @@ mkdir -p "$(dirname "$ICON_MIME")"
 
 FIRST_ICON=""
 
-# Для кожної версії з конфігу — окремий .desktop
+# Create a .desktop entry for each version in the config
 while IFS= read -r line; do
-    # Пропускаємо коментарі, порожні рядки і GUID записи
+    # Skip comments, empty lines and GUID entries
     [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
     [[ "$line" =~ ^\{ ]] && continue
 
@@ -72,20 +72,20 @@ while IFS= read -r line; do
     binary=$(echo "$line" | cut -d'=' -f2- | xargs)
     [[ -z "$version" || -z "$binary" ]] && continue
 
-    # Безпечна назва файлу: "4.27" -> "4-27"
+    # Safe filename: "4.27" -> "4-27"
     safe_ver="${version//\./-}"
     desktop_file="$DESKTOP_DIR/unreal-engine-${safe_ver}.desktop"
     icon_id="unreal-engine-${safe_ver}"
     icon_dest="$HOME/.local/share/icons/hicolor/256x256/apps/${icon_id}.png"
 
-    # Іконка
+    # Icon
     icon_src=$(find_icon_for_binary "$binary")
     if [[ -n "$icon_src" ]]; then
         cp "$icon_src" "$icon_dest"
         [[ -z "$FIRST_ICON" ]] && FIRST_ICON="$icon_src"
     fi
 
-    # .desktop для прямого запуску редактора
+    # .desktop for launching the editor directly
     cat > "$desktop_file" <<EOF
 [Desktop Entry]
 Type=Application
@@ -100,14 +100,14 @@ EOF
 
 done < "$CONF_TARGET"
 
-# Іконка для MIME (.uproject файлів) — беремо першу знайдену
+# MIME icon for .uproject files — use the first one found
 if [[ -n "$FIRST_ICON" ]]; then
     cp "$FIRST_ICON" "$ICON_MIME"
 fi
 
 gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
 
-# MIME тип для .uproject
+# MIME type for .uproject
 mkdir -p "$(dirname "$MIME_TARGET")"
 cat > "$MIME_TARGET" <<'EOF'
 <?xml version="1.0"?>
@@ -119,13 +119,13 @@ cat > "$MIME_TARGET" <<'EOF'
 </mime-info>
 EOF
 update-mime-database "$HOME/.local/share/mime"
-echo "✓ MIME тип зареєстровано: application/x-uproject"
+echo "✓ MIME type registered: application/x-uproject"
 
-# Іконка для unreal-auto-open.desktop — беремо від першої версії в конфігу
+# Icon for unreal-auto-open.desktop — take from the first version in config
 FIRST_VER=$(grep -v '^\s*#' "$CONF_TARGET" | grep -v '^\s*$' | grep -v '^\s*{' | head -1 | cut -d'=' -f1 | xargs | tr '.' '-')
 AUTO_ICON="${FIRST_VER:+unreal-engine-${FIRST_VER}}"
 
-# .desktop для відкриття .uproject (через скрипт що визначає версію)
+# .desktop for opening .uproject files (via the version-detection script)
 cat > "$DESKTOP_DIR/unreal-auto-open.desktop" <<EOF
 [Desktop Entry]
 Type=Application
@@ -140,10 +140,10 @@ EOF
 
 update-desktop-database "$DESKTOP_DIR" 2>/dev/null || true
 
-# Дефолтна програма для .uproject
+# Set as default app for .uproject
 xdg-mime default unreal-auto-open.desktop application/x-uproject
-echo "✓ Встановлено як дефолтну для .uproject"
+echo "✓ Set as default app for .uproject"
 
 echo ""
-echo "Готово. Відредагуй конфіг і додай свої версії UE:"
+echo "Done. Edit the config and add your UE versions:"
 echo "  $CONF_TARGET"

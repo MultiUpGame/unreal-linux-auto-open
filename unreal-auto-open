@@ -5,7 +5,7 @@ CONFIG="$HOME/.config/ue-versions.conf"
 
 if [[ -z "$UPROJECT" || ! -f "$UPROJECT" ]]; then
     zenity --error --title="Unreal Auto Open" \
-        --text="Файл не знайдено:\n$UPROJECT" 2>/dev/null
+        --text="File not found:\n$UPROJECT" 2>/dev/null
     exit 1
 fi
 
@@ -20,13 +20,13 @@ except Exception:
 
 if [[ -z "$ENGINE_VER" ]]; then
     zenity --error --title="Unreal Auto Open" \
-        --text="Не вдалось визначити версію з файлу:\n$UPROJECT" 2>/dev/null
+        --text="Could not read engine version from:\n$UPROJECT" 2>/dev/null
     exit 1
 fi
 
 if [[ ! -f "$CONFIG" ]]; then
     zenity --error --title="Unreal Auto Open" \
-        --text="Конфіг не знайдено:\n$CONFIG\n\nСтворіть файл і вкажіть шляхи:\n4.27 = /path/to/UE4Editor" 2>/dev/null
+        --text="Config not found:\n$CONFIG\n\nCreate the file and add your engine paths:\n4.27 = /path/to/UE4Editor" 2>/dev/null
     exit 1
 fi
 
@@ -34,13 +34,13 @@ EDITOR_PATH=$(grep -E "^\s*${ENGINE_VER}\s*=" "$CONFIG" | head -1 | cut -d'=' -f
 
 if [[ -z "$EDITOR_PATH" ]]; then
     zenity --error --title="Unreal Auto Open" \
-        --text="Версія ${ENGINE_VER} не знайдена в конфігу.\n\nДодайте рядок у:\n$CONFIG\n\n${ENGINE_VER} = /path/to/UE4Editor" 2>/dev/null
+        --text="Version ${ENGINE_VER} not found in config.\n\nAdd this line to:\n$CONFIG\n\n${ENGINE_VER} = /path/to/UE4Editor" 2>/dev/null
     exit 1
 fi
 
 if [[ ! -f "$EDITOR_PATH" ]]; then
     zenity --error --title="Unreal Auto Open" \
-        --text="Бінарник не знайдено:\n$EDITOR_PATH\n\nПеревірте шлях у:\n$CONFIG" 2>/dev/null
+        --text="Binary not found:\n$EDITOR_PATH\n\nCheck the path in:\n$CONFIG" 2>/dev/null
     exit 1
 fi
 
