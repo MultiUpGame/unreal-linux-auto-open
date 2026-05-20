@@ -26,11 +26,49 @@ fi
 
 if [[ ! -f "$CONFIG" ]]; then
     zenity --error --title="Unreal Auto Open" \
-        --text="Config not found:\n$CONFIG\n\nCreate the file and add your engine paths:\n4.27 = /path/to/UE4Editor" 2>/dev/null
+        --text="Config not found:\n$CONFIG\n\nRun install.sh first." 2>/dev/null
     exit 1
 fi
 
-EDITOR_PATH=$(grep -E "^\s*${ENGINE_VER}\s*=" "$CONFIG" | head -1 | cut -d'=' -f2- | xargs)
+EDITOR_PATH=$(grep -E "^\s*$(printf '%s' "$ENGINE_VER" | sed 's/[[\.*^$()+?{|]/\\&/g')\s*=" "$CONFIG" | head -1 | cut -d'=' -f2- | xargs)
+
+# GUID not found — ask user to pick from known engines and save mapping
+if [[ -z "$EDITOR_PATH" && "$ENGINE_VER" == "{"* ]]; then
+    # Build list of known versions for zenity
+    ZENITY_ARGS=()
+    while IFS= read -r line; do
+        [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+        [[ "$line" =~ ^\{ ]] && continue
+        ver=$(echo "$line" | cut -d'=' -f1 | xargs)
+        bin=$(echo "$line" | cut -d'=' -f2- | xargs)
+        [[ -z "$ver" || -z "$bin" ]] && continue
+        ZENITY_ARGS+=("$bin" "Unreal Engine $ver")
+    done < "$CONFIG"
+
+    if [[ ${#ZENITY_ARGS[@]} -eq 0 ]]; then
+        zenity --error --title="Unreal Auto Open" \
+            --text="No engines found in config.\n\nRun install.sh first." 2>/dev/null
+        exit 1
+    fi
+
+    CHOSEN=$(zenity --list \
+        --title="Unreal Auto Open" \
+        --text="Project uses an unregistered engine ID:\n${ENGINE_VER}\n\nWhich engine should open it?" \
+        --column="Path" --column="Version" \
+        --hide-column=1 --print-column=1 \
+        "${ZENITY_ARGS[@]}" 2>/dev/null)
+
+    if [[ -z "$CHOSEN" ]]; then
+        exit 0
+    fi
+
+    # Save GUID → engine mapping to config
+    echo "" >> "$CONFIG"
+    echo "# Auto-detected: ${ENGINE_VER}" >> "$CONFIG"
+    echo "${ENGINE_VER} = ${CHOSEN}" >> "$CONFIG"
+
+    EDITOR_PATH="$CHOSEN"
+fi
 
 if [[ -z "$EDITOR_PATH" ]]; then
     zenity --error --title="Unreal Auto Open" \
