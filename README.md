@@ -15,17 +15,28 @@ cd unreal-linux-auto-open
 bash install.sh
 ```
 
-Then edit the config:
+A folder picker will appear — select the folder where all your UE versions are stored (e.g. `/home/user/UE/`).
+The script will scan it, detect all installed versions automatically, and set everything up.
 
-```bash
-nano ~/.config/ue-versions.conf
-```
+That's it.
+
+---
+
+## What install.sh does
+
+- Installs `zenity` if not present
+- Copies the script to `~/.local/bin/`
+- Scans your UE folder and writes the config automatically
+- Registers `.uproject` as a file type in the system
+- Creates a launcher entry for each detected UE version with its icon
+- Sets the default app for `.uproject` files
 
 ---
 
 ## Config
 
-Set paths to your installed UE versions:
+Config is generated automatically at `~/.config/ue-versions.conf`.
+You can edit it manually if needed:
 
 ```ini
 4.27 = /home/user/UE/UE4_27/UnrealEngine/Engine/Binaries/Linux/UE4Editor
@@ -38,17 +49,7 @@ Set paths to your installed UE versions:
 {0004A0B4-08DE-9DB4-BB53-F9B8850D3D35} = /home/user/UE/UE4_27/UnrealEngine/Engine/Binaries/Linux/UE4Editor
 ```
 
----
-
-## What install.sh does
-
-- Installs `zenity` if not present
-- Copies the script to `~/.local/bin/`
-- Registers `.uproject` as a file type in the system
-- Creates launcher entries for each UE version in your config
-- Sets the default app for `.uproject` files
-
-After install, double-clicking a `.uproject` immediately opens it with the correct UE version.
+To re-run the scan after adding new engine versions, just run `bash install.sh` again.
 
 ---
 
