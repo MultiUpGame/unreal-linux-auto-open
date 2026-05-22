@@ -10,6 +10,22 @@ DESKTOP_DIR="$HOME/.local/share/applications"
 MIME_TARGET="$HOME/.local/share/mime/packages/unreal-uproject.xml"
 ICON_MIME="$HOME/.local/share/icons/hicolor/256x256/mimetypes/application-x-uproject.png"
 
+# Check PATH
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo "! ~/.local/bin is not in PATH"
+    SHELL_RC=""
+    if [[ -f "$HOME/.zshrc" ]]; then SHELL_RC="$HOME/.zshrc"
+    elif [[ -f "$HOME/.bashrc" ]]; then SHELL_RC="$HOME/.bashrc"
+    fi
+    if [[ -n "$SHELL_RC" ]]; then
+        echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$SHELL_RC"
+        echo "✓ Added ~/.local/bin to PATH in $SHELL_RC (restart terminal to apply)"
+    else
+        echo "  Add this to your shell config manually:"
+        echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+    fi
+fi
+
 # Dependencies
 if ! command -v zenity &>/dev/null; then
     echo "Installing dependency: zenity"
